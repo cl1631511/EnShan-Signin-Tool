@@ -27,12 +27,15 @@
    
 ```
 名称：EnShanSigninTool
+
 链接：https://github.com/quan-ge/EnShan-Signin-Tool.git
+
 定时规则：2 2 28 * *
+
 白名单: enshan_sign.py
 ```
 
-1. **配置依赖**：
+2. **配置依赖**：
   - 请添加以下Linux依赖
 
 Plaintext
@@ -49,7 +52,11 @@ Plaintext
 ```
 chromium
 chromium-chromedriver
-```  
+``` 
+
+3. **安装完成**
+
+   - 可以在'定时任务'中查看
 
 
 ### 方式二：本地运行 (新版已弃用，不提供任何维护，请安装青龙面板或使用其他项目)
