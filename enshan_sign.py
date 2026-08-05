@@ -380,7 +380,10 @@ def run_sign_in():
                 f"总签到天数：{total_days} 天 \n"
                 f"总积分：{total_points} \n"
                 f"贡献分：{contribution} 分 \n"
-                f"恩山币：{enshan_coin} 币"
+                f"恩山币：{enshan_coin} 币 \n"
+                f"=====结束===== \n"
+                f"💡By EnShan-Signin-Tool  \n"
+                f"欢迎Star：https://github.com/quan-ge/EnShan-Signin-Tool/  \n"
             )
             
             print("=== 推送内容预览 ===")
