@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 # cron:0 9 * * *
 # new Env("恩山论坛每日签到")
 
@@ -7,7 +7,6 @@ import time
 import os
 import re
 import random
-import requests
 import shutil
 from DrissionPage import ChromiumPage, ChromiumOptions
 
@@ -15,6 +14,66 @@ CONFIG_FILE = "config.json"
 
 # 统一的 User-Agent
 USER_AGENT = "Mozilla/5.0 (Linux; Android 13; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
+
+ENV_KEYS = ["EST_USER_UID", "EST_cookie", "EST_ENABLE_RANDOM_WAIT"]
+
+
+def parse_bool(value, default=False):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized == "true":
+            return True
+        if normalized == "false":
+            return False
+    return default
+
+
+def load_config():
+    if not os.path.exists(CONFIG_FILE):
+        return {}
+    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+        return json.load(f) or {}
+
+
+def save_config(data):
+    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+def sync_env_to_config():
+    config = load_config()
+    changed = False
+
+    for key in ENV_KEYS:
+        value = os.environ.get(key, "")
+        if not value:
+            continue
+
+        if key == "EST_ENABLE_RANDOM_WAIT":
+            parsed = "true" if parse_bool(value, False) else "false"
+            # Respect manual edits in config.json: do not overwrite if key already exists
+            if key in config:
+                print(f"ℹ️ 配置文件已存在 {key}，保留当前值: {config.get(key)}")
+            else:
+                if config.get(key, "") != parsed:
+                    config[key] = parsed
+                    changed = True
+                    print(f"🔧 同步环境变量到 config.json: {key}={parsed}")
+        else:
+            if config.get(key, "") != value:
+                config[key] = value
+                changed = True
+                print(f"🔧 同步环境变量到 config.json: {key}")
+
+    if changed:
+        save_config(config)
+        print("✅ config.json 已更新")
+    else:
+        print("ℹ️ 无需更新 config.json")
+
+# -------
 
 def random_wait():
     """随机倒数函数 (0-900秒)"""
@@ -33,44 +92,16 @@ def force_kill_chrome():
     except:
         pass
 
-def load_config():
-    if not os.path.exists(CONFIG_FILE):
-        print(f"错误: 找不到 {CONFIG_FILE}")
-        return None
-    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
 
-
-def save_config(data):
-    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-
-def sync_env_to_config():
-    env_keys = ["PUSHPLUS_TOKEN", "USER_UID", "cookie"]
-    env_values = {key: os.environ.get(key, "") for key in env_keys}
-    config = {}
-
-    if os.path.exists(CONFIG_FILE):
-        try:
-            config = load_config() or {}
-        except Exception:
-            config = {}
-
-    changed = False
-    for key, value in env_values.items():
-        if value:
-            if config.get(key, "") != value:
-                config[key] = value
-                changed = True
-                print(f"🔧 同步环境变量到 config.json: {key}")
-
-    if changed:
-        try:
-            save_config(config)
-            print("✅ config.json 已更新")
-        except Exception as e:
-            print(f"❌ 写入 config.json 失败: {e}")
+def system_notify(title, content, config=None):
+    try:
+        # 使用青龙面板自带通知功能
+        QLAPI.systemNotify({"title": title, "content": content})
+        print('📨 Qinglong 内置通知已发送')
+        return True
+    except Exception as e:
+        print(f'⚠️ QLAPI.systemNotify 调用失败: {e}')
+        return False
 
 
 def save_cookie_to_config(new_cookie_str):
@@ -80,7 +111,7 @@ def save_cookie_to_config(new_cookie_str):
         if "rHEX_2132_auth" not in new_cookie_str: return
         
         print("💾 正在更新 config.json 中的 Cookie...")
-        data['cookie'] = new_cookie_str
+        data['EST_cookie'] = new_cookie_str
         
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
@@ -88,18 +119,6 @@ def save_cookie_to_config(new_cookie_str):
     except Exception as e:
         print(f"❌ 保存 Cookie 失败: {str(e)}")
 
-def push_pushplus(token, content):
-    if not token:
-        print("⚠️ 未配置 PUSHPLUS_TOKEN，跳过推送")
-        return
-        
-    url = "https://www.pushplus.plus/send"
-    data = {"token": token, "title": "恩山签到结果", "content": content}
-    try:
-        requests.post(url, json=data)
-        print("📨 PushPlus 通知已发送")
-    except Exception as e:
-        print(f"❌ 推送失败: {e}")
 
 def get_cookies_safe(page):
     try:
@@ -117,20 +136,23 @@ def extract_regex(pattern, text, default="0"):
     except:
         return default
 
+def should_random_wait(config):
+    enable_random_wait = config.get('EST_ENABLE_RANDOM_WAIT', 'false')
+    return parse_bool(enable_random_wait, False)
+
+
 def run_sign_in():
-    # 0. 同步环境变量到 config.json
-    sync_env_to_config()
-
-    # 1. 执行随机延迟
-    random_wait()
-
-    # 2. 读取配置
+    # 1. 读取配置
     config = load_config()
     if not config: return
+
+    if should_random_wait(config):
+        random_wait()
+    else:
+        print("⏩ 随机延迟已禁用，直接开始执行任务")
     
-    raw_cookie = config.get('cookie', '')
-    push_token = config.get('PUSHPLUS_TOKEN', '')
-    user_uid = config.get('USER_UID', '')
+    raw_cookie = config.get('EST_cookie', '')
+    user_uid = config.get('EST_USER_UID', '')
     
     if not raw_cookie or not user_uid:
         print("❌ 错误: config.json 配置缺失")
@@ -192,7 +214,7 @@ def run_sign_in():
     
     if not page:
         print("❌ 浏览器连续启动失败，放弃执行。")
-        push_pushplus(push_token, "恩山脚本错误: 浏览器连续启动失败 (v3.3)。请尝试重启青龙容器。")
+        system_notify("恩山签到错误", "恩山脚本错误: 浏览器连续启动失败 (v3.3)。请尝试重启青龙容器。", config)
         # 清理临时目录
         shutil.rmtree(rand_dir, ignore_errors=True)
         return
@@ -236,7 +258,7 @@ def run_sign_in():
             try:
                 if "登录" in page.ele('tag:body').text:
                     print("❌ 严重错误: Cookie 已失效，变为游客状态。")
-                    push_pushplus(push_token, "恩山签到失败：Cookie 已失效，请更新 config.json。")
+                    system_notify("恩山签到失败", "恩山签到失败：Cookie 已失效，请更新 config.json。", config)
                     return
             except: pass
         
@@ -250,7 +272,7 @@ def run_sign_in():
             
         if not formhash and not is_signed:
             print("❌ 错误: 无法提取 formhash")
-            push_pushplus(push_token, "恩山签到失败：无法提取 Formhash")
+            system_notify("恩山签到失败", "恩山签到失败：无法提取 Formhash", config)
             return
         
         if formhash:
@@ -350,33 +372,33 @@ def run_sign_in():
 
             # 8.4 构建推送模版
             notify_content = (
-                f"✅ 签到成功！🎊<br>"
-                f"📊 积分统计如下：<br>"
-                f"===========<br>"
-                f"今日积分：{today_points} <br>"
-                f"连续签到：{continuous_days} 天 <br>"
-                f"总签到天数：{total_days} 天 <br>"
-                f"总积分：{total_points} <br>"
-                f"贡献分：{contribution} 分 <br>"
+                f"✅ 签到成功！🎊\n"
+                f"📊 积分统计如下：\n"
+                f"===========\n"
+                f"今日积分：{today_points} \n"
+                f"连续签到：{continuous_days} 天 \n"
+                f"总签到天数：{total_days} 天 \n"
+                f"总积分：{total_points} \n"
+                f"贡献分：{contribution} 分 \n"
                 f"恩山币：{enshan_coin} 币"
             )
             
             print("=== 推送内容预览 ===")
-            print(notify_content.replace("<br>", "\n"))
+            print(notify_content)
             
-            push_pushplus(push_token, notify_content)
+            system_notify("恩山签到成功", notify_content, config)
             
             final_cookies = get_cookies_safe(page)
             save_cookie_to_config(final_cookies)
             
         else:
             print("❌ 签到失败")
-            push_pushplus(push_token, f"❌ 恩山签到失败：{sign_msg}")
+            system_notify("恩山签到失败", f"❌ 恩山签到失败：{sign_msg}", config)
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        push_pushplus(push_token, f"恩山脚本运行出错: {str(e)}")
+        system_notify("恩山脚本错误", f"恩山脚本运行出错: {str(e)}", config)
         
     finally:
         try:
@@ -391,4 +413,5 @@ def run_sign_in():
             pass
 
 if __name__ == "__main__":
+    sync_env_to_config()
     run_sign_in()
