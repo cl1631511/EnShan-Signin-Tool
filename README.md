@@ -1,75 +1,66 @@
 # EnShan-Signin-Tool
 
-2026年8月 更新的恩山论坛每日签到脚本，青龙面板专用。
+2026年8月更新的恩山论坛每日签到脚本，专为青龙面板优化。
 
-> 
-> 项目部分代码来自[FunSeason/enshan](https://github.com/FunSeason/enshan)项目
->
-> 
+> 项目部分代码来源于 [FunSeason/enshan](https://github.com/FunSeason/enshan)。
 
 ## ✨ 功能特性
 
-- **🛡️ 强力过盾**：使用浏览器原生环境模拟操作，完美绕过 Cloudflare/顶象/云盾等 WAF 防火墙拦截。
-  
-- **🍪 Cookie 自愈**：自动检测 Cookie 有效性，若过期自动触发浏览器验证获取新 Cookie 并回写至配置文件，无需人工干预。
-  
-- **🌍 双语适配**：智能识别页面语言，兼容论坛自带翻译插件导致的英文/乱码页面，准确抓取积分数据。
-  
-- **♻️ 进程自愈**：内置僵尸进程清理机制，防止在 Docker/青龙面板中因浏览器残留导致的内存泄漏或启动失败。
-  
-- **⏰ 随机延迟**：启动前随机等待 0-900 秒，模拟真实用户行为，降低风控风险。
-  
-- **📲 消息推送**：支持 PushPlus 微信推送签到结果及详细积分统计。
+- **🛡️ 强力过盾**：使用浏览器原生环境模拟操作，绕过 Cloudflare / 顶象 / 云盾等防火墙拦截。
+- **🍪 Cookie 自愈**：检测 Cookie 是否有效，若失效可触发浏览器验证并回写 `config.json`。
+- **🌍 双语适配**：兼容英文页面与论坛翻译插件，稳定抓取签到数据。
+- **♻️ 进程自愈**：执行前清理残留浏览器进程，避免任务被僵尸进程影响。
+- **⏰ 随机延迟**：默认启用随机等待 0-900 秒，模拟真实用户行为，降低风控风险。
+- **📲 青龙通知**：直接调用 `QLAPI.systemNotify` 发送签到结果，无需额外 PushPlus。
 
+## 🚀 青龙面板运行指南
 
+### 1. 导入仓库
 
-## 🚀 运行方式
+在青龙面板中添加订阅：
 
-### 方式一：青龙面板 (推荐)
-
-1. **添加订阅**：
-
-   - 在青龙面板中添加以下配置
-   
-```
+```text
 名称：EnShanSigninTool
-
 链接：https://github.com/quan-ge/EnShan-Signin-Tool.git
-
+白名单：enshan_sign.py
 定时规则：2 2 28 * *
-
-白名单: enshan_sign.py
-
-（其他留空或保持默认）
 ```
 
-   - 网络不佳请科学上网或修改链接为
+网络不佳请科学上网或改为：
 
-```
+```text
 https://fgp.120322.dpdns.org/https://github.com/quan-ge/EnShan-Signin-Tool.git
 ```
 
-2. **配置依赖**：
-  - 请添加以下Linux依赖
+### 2. 安装依赖
 
+打开青龙面板的“依赖管理”
+
+安装Python3依赖：
+
+- `DrissionPage`
+- `requests`
+
+安装Linux依赖：
+
+- `chromium`
+- `chromium-chromedriver`
+
+> 若容器已有 Chromium，可使用系统自带路径；否则请确认 `/usr/bin/chromium` 或 `/usr/bin/chromium-browser` 可用。
+
+### 3. 配置 `config.json`
+
+在脚本目录下创建或更新 `config.json`：
+
+```json
+{
+  "EST_USER_UID": "1000005",
+  "EST_cookie": "your_cookie_here",
+  "EST_ENABLE_RANDOM_WAIT": "true"
+}
 ```
-DrissionPage
-requests
-```
 
-  - 请添加以下Python3依赖
-
-```
-chromium
-chromium-chromedriver
-``` 
-
-3. **安装完成**
-
-   - 可以在'定时任务'中查看
-
-
-~~### 方式二：本地运行~~ (新版已弃用，不提供任何维护，请安装青龙面板或使用其他项目)
+###  ~~方式二：本地运行~~ (新版已弃用，不提供任何维护，请安装青龙面板或使用其他项目)
 
 ~~1. 安装 Python 3.8+。
 2. 安装库：`pip install DrissionPage requests`。
@@ -87,21 +78,17 @@ chromium-chromedriver
 | `EST_cookie`             | 字符串 | 无     | 登录后浏览器 Cookie，用于模拟登录状态。                |
 | `EST_ENABLE_RANDOM_WAIT` | 字符串 | `true` | 是否启用随机延迟启动；仅支持 `true` 或 `false`。       |
 
-**参数获取方式：**
+### 参数获取方式
 
-1. **EST_USER_UID**: 登录恩山论坛 -> 点击右上角头像 -> 地址栏 `uid=` 后面的数字。
-
-2. **EST_cookie**:
-
-  - 电脑浏览器打开恩山论坛并登录。
-  - 按 `F12` 打开开发者工具 -> 点击 `Network` (网络)。
-  - 刷新页面，点击某个请求（如 `forum.php`）。
-  - 在右侧 `Headers` (标头) 中找到 `Cookie:`，复制其后的所有字符串。
+- **EST_USER_UID**：登录恩山论坛 -> 点击右上角头像 -> 地址栏 `uid=` 后面的数字。
+- **EST_cookie**：
+  1. 浏览器登录恩山论坛。
+  2. 按 `F12` 打开开发者工具，进入 `Network`。
+  3. 刷新页面，选择一个请求（如 `forum.php`）。
+  4. 在 `Headers` 中找到 `Cookie:`，复制其后的全部字符串。
 
 ## ⚠️ 免责声明
 
-- 本脚本仅供学习交流使用，请勿用于商业用途。
-  
-- 使用本脚本产生的任何后果（如账号被封禁等）由使用者自行承担。
-  
-- 请遵守恩山无线论坛的相关规定，合理使用自动化工具。
+- 本脚本仅供学习交流使用，不可用于商业用途。
+- 使用脚本产生的任何后果由使用者自行承担。
+- 请遵守恩山无线论坛相关规定，合理使用自动化工具。
