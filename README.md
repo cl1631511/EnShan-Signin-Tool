@@ -2,6 +2,9 @@
 
 2026年8月 更新的恩山论坛每日签到脚本，青龙面板专用。
 
+> 
+> 项目部分代码来自[FunSeason/enshan](https://github.com/FunSeason/enshan)项目
+
 ## ✨ 功能特性
 
 - **🛡️ 强力过盾**：使用浏览器原生环境模拟操作，完美绕过 Cloudflare/顶象/云盾等 WAF 防火墙拦截。
@@ -47,8 +50,6 @@ https://fgp.120322.dpdns.org/https://github.com/quan-ge/EnShan-Signin-Tool.git
 1. **配置依赖**：
   - 请添加以下Linux依赖
 
-Plaintext
-
 ```
 DrissionPage
 requests
@@ -56,14 +57,12 @@ requests
 
   - 请添加以下Python3依赖
 
-Plaintext
-
 ```
 chromium
 chromium-chromedriver
 ``` 
 
-3. **安装完成**
+1. **安装完成**
 
    - 可以在'定时任务'中查看
 
