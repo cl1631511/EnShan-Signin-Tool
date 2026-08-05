@@ -15,9 +15,6 @@ CONFIG_FILE = "config.json"
 # 统一的 User-Agent
 USER_AGENT = "Mozilla/5.0 (Linux; Android 13; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
 
-ENV_KEYS = ["EST_USER_UID", "EST_cookie", "EST_ENABLE_RANDOM_WAIT"]
-
-
 def parse_bool(value, default=False):
     if isinstance(value, bool):
         return value
@@ -46,8 +43,9 @@ def sync_env_to_config():
     config = load_config()
     changed = False
 
-    for key in ENV_KEYS:
-        value = os.environ.get(key, "")
+    for key, value in sorted(os.environ.items()):
+        if not key.startswith("EST_"):
+            continue
         if not value:
             continue
 
