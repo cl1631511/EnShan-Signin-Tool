@@ -53,14 +53,10 @@ def sync_env_to_config():
 
         if key == "EST_ENABLE_RANDOM_WAIT":
             parsed = "true" if parse_bool(value, False) else "false"
-            # Respect manual edits in config.json: do not overwrite if key already exists
-            if key in config:
-                print(f"ℹ️ 配置文件已存在 {key}，保留当前值: {config.get(key)}")
-            else:
-                if config.get(key, "") != parsed:
-                    config[key] = parsed
-                    changed = True
-                    print(f"🔧 同步环境变量到 config.json: {key}={parsed}")
+            if config.get(key, "") != parsed:
+                config[key] = parsed
+                changed = True
+                print(f"🔧 同步环境变量到 config.json: {key}={parsed}")
         else:
             if config.get(key, "") != value:
                 config[key] = value
@@ -137,8 +133,8 @@ def extract_regex(pattern, text, default="0"):
         return default
 
 def should_random_wait(config):
-    enable_random_wait = config.get('EST_ENABLE_RANDOM_WAIT', 'false')
-    return parse_bool(enable_random_wait, False)
+    enable_random_wait = config.get('EST_ENABLE_RANDOM_WAIT', 'true')
+    return parse_bool(enable_random_wait, True)
 
 
 def run_sign_in():
