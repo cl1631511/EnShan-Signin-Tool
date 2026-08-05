@@ -1,10 +1,8 @@
 # EnShan-Signin-Tool
 
-2026年8月更新的恩山论坛每日签到脚本，专为青龙面板优化。
+2026年8月 更新的恩山论坛每日签到脚本，专为青龙面板优化。
 
 > 项目部分代码来源于 [FunSeason/enshan](https://github.com/FunSeason/enshan)。
->
-> 
 
 ## ✨ 功能特性
 
@@ -12,8 +10,8 @@
 - **🍪 Cookie 自愈**：检测 Cookie 是否有效，若失效可触发浏览器验证并回写 `config.json`。
 - **🌍 双语适配**：兼容英文页面与论坛翻译插件，稳定抓取签到数据。
 - **♻️ 进程自愈**：执行前清理残留浏览器进程，避免任务被僵尸进程影响。
-- **⏰ 随机延迟**：默认启用随机等待 0-900 秒，模拟真实用户行为，降低风控风险。
-- **📲 青龙通知**：直接调用 `QLAPI.systemNotify` 发送签到结果，无需额外 PushPlus。
+- **⏰ 随机延迟**：默认启用随机等待，模拟真实用户行为，降低风控风险。
+- **📲 青龙通知**：直接调用青龙面板发送签到结果，无需额外配置。
 
 ## 🚀 青龙面板运行指南
 
@@ -28,7 +26,7 @@
 定时规则：2 2 28 * *
 ```
 
-网络不佳请科学上网或改为：
+网络不佳请科学上网 或改为：
 
 ```text
 https://fgp.120322.dpdns.org/https://github.com/quan-ge/EnShan-Signin-Tool.git
@@ -48,19 +46,9 @@ https://fgp.120322.dpdns.org/https://github.com/quan-ge/EnShan-Signin-Tool.git
 - `chromium`
 - `chromium-chromedriver`
 
-> 若容器已有 Chromium，可使用系统自带路径；否则请确认 `/usr/bin/chromium` 或 `/usr/bin/chromium-browser` 可用。
+### 3. 配置变量
 
-### 3. 配置 `config.json`
-
-在脚本目录下创建或更新 `config.json`：
-
-```json
-{
-  "EST_USER_UID": "1000005",
-  "EST_cookie": "your_cookie_here",
-  "EST_ENABLE_RANDOM_WAIT": "true"
-}
-```
+请在青龙面板的环境变量页面配置，参考下方[变量说明](#%EF%B8%8F-变量说明)
 
 ###  ~~方式二：本地运行~~ (新版已弃用，不提供任何维护，请安装青龙面板或使用其他项目)
 
