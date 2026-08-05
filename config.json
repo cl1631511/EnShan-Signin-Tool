@@ -1,5 +1,5 @@
 {
-  "EST_USER_UID": "这里填入您的恩山账号的uid",
-  "EST_cookie": "这里填入您抓取到恩山完整Cookie字符串",
-  "EST_ENABLE_RANDOM_WAIT": "false"
+  "EST_USER_UID": "",
+  "EST_cookie": "",
+  "EST_ENABLE_RANDOM_WAIT": "true"
 }
