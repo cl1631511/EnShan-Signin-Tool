@@ -26,7 +26,10 @@
 1. **添加订阅**：
    
 ```
-https://github.com/quan-ge/EnShan-Signin-Tool
+名称：EnShanSigninTool
+链接：https://github.com/quan-ge/EnShan-Signin-Tool.git
+定时规则：2 2 28 * *
+白名单: enshan_sign.py
 ```
 
 1. **配置依赖**：
