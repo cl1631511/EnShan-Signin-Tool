@@ -47,7 +47,7 @@
 https://fgp.120322.dpdns.org/https://github.com/quan-ge/EnShan-Signin-Tool.git
 ```
 
-1. **配置依赖**：
+2. **配置依赖**：
   - 请添加以下Linux依赖
 
 ```
@@ -62,7 +62,7 @@ chromium
 chromium-chromedriver
 ``` 
 
-1. **安装完成**
+3. **安装完成**
 
    - 可以在'定时任务'中查看
 
