@@ -2,8 +2,8 @@ name: EnShan Signin
 
 on:
   schedule:
-    - cron: '2 20 * * *'  # 每天凌晨4:02运行，可按需调整
-  workflow_dispatch:      # 允许手动触发
+    - cron: '50 20 * * *'   # 每天凌晨4点50运行
+  workflow_dispatch:        # 保留手动触发
 
 jobs:
   signin:
@@ -28,8 +28,47 @@ jobs:
         pip install DrissionPage requests
         
     - name: Run sign-in script
+      id: signin
+      continue-on-error: true  # 允许失败，以便后续步骤能执行
       env:
         EST_USER_UID: ${{ secrets.EST_USER_UID }}
         EST_cookie: ${{ secrets.EST_cookie }}
       run: |
         python enshan_sign.py
+        
+    - name: Bark Notification
+      if: always()  # 无论签到步骤成功还是失败，都执行通知
+      env:
+        BARK_KEY: ${{ secrets.BARK_KEY }}
+      run: |
+        # URL 编码函数（处理中文和特殊字符）
+        urlencode() {
+          echo "$1" | sed 's/ /%20/g;s/！/%EF%BC%81/g;s/？/%EF%BC%9F/g;s/，/%EF%BC%8C/g;s/：/%EF%BC%9A/g;s/；/%EF%BC%9B/g;s/“/%E2%80%9C/g;s/”/%E2%80%9D/g'
+        }
+
+        # 检查签到步骤的结果
+        if [ "${{ steps.signin.outcome }}" = "success" ]; then
+          TITLE="恩山签到成功"
+          BODY="签到任务完成于 $(date '+%Y-%m-%d %H:%M:%S')"
+          EXTRA=""  # 成功时无额外参数
+        else
+          TITLE="恩山签到失败"
+          BODY="签到任务失败，请检查日志\n时间: $(date '+%Y-%m-%d %H:%M:%S')"
+          EXTRA="?level=critical&volume=0"  # 失败时添加紧急参数
+        fi
+
+        # 对标题和内容进行 URL 编码
+        ENCODED_TITLE=$(urlencode "$TITLE")
+        ENCODED_BODY=$(urlencode "$BODY")
+
+        # 发送 Bark 推送
+        if [ -n "$BARK_KEY" ]; then
+          echo "📤 发送 Bark 推送..."
+          curl -s "https://api.day.app/${BARK_KEY}/${ENCODED_TITLE}/${ENCODED_BODY}${EXTRA}" \
+            --connect-timeout 10 \
+            --max-time 30
+          echo ""
+          echo "✅ Bark 推送完成"
+        else
+          echo "⏭️ 未设置 BARK_KEY，跳过 Bark 推送"
+        fi
