@@ -364,11 +364,18 @@ def run_sign_in():
             except Exception as e:
                 print(f"❌ 数据解析异常: {e}")
 
+            # userid脱敏
+            if len(user_uid) >= 5:
+                notify_user_id = user_uid[:2] + "***" + user_uid[2:]
+            else:
+                notify_user_id = "***"
+
             # 8.4 构建推送模版
             notify_content = (
                 f"🎉 ===EnShan-Signin-Tool===\n"
                 f"✅ 签到成功！🎊\n"
                 f"======签到信息=====\n"
+                f"账号UID：{notify_user_id} \n"
                 f"今日积分：{today_points} \n"
                 f"连续签到：{continuous_days} 天 \n"
                 f"总签到天数：{total_days} 天 \n"
