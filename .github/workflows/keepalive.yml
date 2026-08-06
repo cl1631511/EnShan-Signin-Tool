@@ -2,32 +2,38 @@ name: 仓库保活
 
 on:
   schedule:
-    #  每周1运行一次，已经能达到“保活”目的，又不会太频繁
+    # 每周1运行一次，避免仓库因长期无活动被标记为"僵尸仓库"
     - cron: '20 20 * * 1'
-  workflow_dispatch:   # 保留手动触发，方便你随时调试
+  workflow_dispatch:
 
 jobs:
-  signin:
+  keepalive:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-        
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y chromium-browser chromium-chromedriver
-        pip install DrissionPage requests
-        
-    - name: Run sign-in
-      env:
-        EST_USER_UID: ${{ secrets.EST_USER_UID }}
-        EST_cookie: ${{ secrets.EST_cookie }}
-      run: |
-        python enshan_sign.py
+      - name: 检出仓库
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 更新保活时间戳
+        run: |
+          mkdir -p .github
+          echo " 最后保活时间: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" > .github/KEEPALIVE.md
+          echo " 触发方式: ${{ github.event_name }}" >> .github/KEEPALIVE.md
+
+      - name: 提交并推送
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .github/KEEPALIVE.md
+
+          if git diff --staged --quiet; then
+            echo " 无变更，跳过提交"
+          else
+            git commit -m "chore: keepalive at $(date -u +'%Y-%m-%d')"
+            git push
+            echo " 保活提交成功"
+          fi
