@@ -89,7 +89,7 @@ def force_kill_chrome():
 
 def system_notify(title, content, config=None):
     try:
-        # 使用青龙面板自带通知功能
+        # 调用内置API，使用青龙面板自带通知功能
         QLAPI.systemNotify({"title": title, "content": content})
         print('📨 Qinglong 内置通知已发送')
         return True
@@ -365,8 +365,11 @@ def run_sign_in():
                 print(f"❌ 数据解析异常: {e}")
 
             # userid脱敏
+            # 这么写是为了以防万一
             if len(user_uid) >= 5:
-                notify_user_id = user_uid[:2] + "***" + user_uid[2:]
+                notify_user_id = user_uid[:2] + "***" + user_uid[len(user_uid) - 2:]
+            if len(user_uid) >= 3 and len(user_uid) < 5:
+                notify_user_id = user_uid[:2] + "***"
             else:
                 notify_user_id = "***"
 
