@@ -366,12 +366,13 @@ def run_sign_in():
 
             # 8.4 构建推送模版
             notify_content = (
+                f"🎉 ===EnShan-Signin-Tool===\n"
                 f"✅ 签到成功！🎊\n"
-                f"📊 积分统计如下：\n"
-                f"===========\n"
+                f"======签到信息=====\n"
                 f"今日积分：{today_points} \n"
                 f"连续签到：{continuous_days} 天 \n"
                 f"总签到天数：{total_days} 天 \n"
+                f"======积分统计=====\n"
                 f"总积分：{total_points} \n"
                 f"贡献分：{contribution} 分 \n"
                 f"恩山币：{enshan_coin} 币 \n"
