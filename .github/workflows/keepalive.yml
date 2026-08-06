@@ -1,21 +1,17 @@
-name: Keep Alive
+name: EnShan Signin
 
 on:
   schedule:
-    - cron: '20 16 * * 1'
-  workflow_dispatch:
+    #  每周1运行一次，已经能达到“保活”目的，又不会太频繁
+    - cron: '20 20 * * 1'
+  workflow_dispatch:   # 保留手动触发，方便你随时调试
 
 jobs:
-  keepalive:
+  signin:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Keep repository alive
-      run: |
-        echo " 保活运行时间: $(date '+%Y-%m-%d %H:%M:%S')"
-        echo " 仓库状态: 活跃"
-        
-    - name: Run EnShan Signin
+    - name: Checkout
       uses: actions/checkout@v4
       
     - name: Set up Python
@@ -29,14 +25,9 @@ jobs:
         sudo apt-get install -y chromium-browser chromium-chromedriver
         pip install DrissionPage requests
         
-    - name: Execute sign-in
+    - name: Run sign-in
       env:
         EST_USER_UID: ${{ secrets.EST_USER_UID }}
         EST_cookie: ${{ secrets.EST_cookie }}
       run: |
         python enshan_sign.py
-        
-    - name: Update last run timestamp
-      run: |
-        echo "last_run=$(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
-        echo " 最后运行时间: ${{ env.last_run }}"
