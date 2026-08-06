@@ -330,9 +330,9 @@ def run_sign_in():
             print(f"📥 正在抓取个人资料页 (UID: {user_uid})...")
             page.get(profile_url)
             
-            total_points = "未知"
-            contribution = "未知"
-            enshan_coin = "未知"
+            total_points = "获取失败"
+            contribution = "获取失败"
+            enshan_coin = "获取失败"
             
             try:
                 time.sleep(5)
@@ -366,10 +366,14 @@ def run_sign_in():
 
             # userid脱敏
             # 这么写是为了以防万一
-            if len(user_uid) >= 5:
-                notify_user_id = user_uid[:2] + "***" + user_uid[len(user_uid) - 2:]
-            else:
-                notify_user_id = "***"
+            try:
+                if len(user_uid) >= 5:
+                    notify_user_id = user_uid[:2] + "***" + user_uid[len(user_uid) - 2:]
+                else:
+                    notify_user_id = "***"
+            except Exception as e:
+                print(f"❌ UserID脱敏异常: {e}")
+                notify_user_id = "获取失败"
 
             # 8.4 构建推送模版
             notify_content = (
