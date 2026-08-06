@@ -2,7 +2,7 @@ name: EnShan Signin
 
 on:
   schedule:
-    - cron: '50 20 * * *'   # 每天凌晨4点50运行
+    - cron: '50 2 * * *'
   workflow_dispatch:        # 保留手动触发
 
 jobs:
