@@ -1,4 +1,4 @@
-name: EnShan Signin
+name: 仓库保活
 
 on:
   schedule:
