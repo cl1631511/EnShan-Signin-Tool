@@ -1,0 +1,42 @@
+name: Keep Alive
+
+on:
+  schedule:
+    - cron: '20 16 * * 1'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Keep repository alive
+      run: |
+        echo " 保活运行时间: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo " 仓库状态: 活跃"
+        
+    - name: Run EnShan Signin
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser chromium-chromedriver
+        pip install DrissionPage requests
+        
+    - name: Execute sign-in
+      env:
+        EST_USER_UID: ${{ secrets.EST_USER_UID }}
+        EST_cookie: ${{ secrets.EST_cookie }}
+      run: |
+        python enshan_sign.py
+        
+    - name: Update last run timestamp
+      run: |
+        echo "last_run=$(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+        echo " 最后运行时间: ${{ env.last_run }}"
