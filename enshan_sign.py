@@ -368,8 +368,6 @@ def run_sign_in():
             # 这么写是为了以防万一
             if len(user_uid) >= 5:
                 notify_user_id = user_uid[:2] + "***" + user_uid[len(user_uid) - 2:]
-            if len(user_uid) >= 3 and len(user_uid) < 5:
-                notify_user_id = user_uid[:2] + "***"
             else:
                 notify_user_id = "***"
 
