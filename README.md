@@ -1,6 +1,8 @@
 # EnShan-Signin-Tool
 
-2026年8月 更新的恩山论坛每日签到脚本，专为青龙面板优化。
+恩山论坛每日签到脚本，青龙面板专用。
+
+2026年8月 实测可用
 
 > 项目部分代码来源于 [FunSeason/enshan](https://github.com/FunSeason/enshan)。
 
