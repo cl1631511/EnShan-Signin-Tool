@@ -2,7 +2,7 @@ name: EnShan Signin
 
 on:
   schedule:
-    - cron: '2 2 28 * *'  # 每天凌晨2:02运行，可按需调整
+    - cron: '2 20 * * *'  # 每天凌晨4:02运行，可按需调整
   workflow_dispatch:      # 允许手动触发
 
 jobs:
