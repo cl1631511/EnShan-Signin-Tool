@@ -3,7 +3,7 @@ name: 仓库保活
 on:
   schedule:
     # 每周1运行一次，避免仓库因长期无活动被标记为"僵尸仓库"
-    - cron: '49 13 * * 1'
+    - cron: '11 13 * * 1'
   workflow_dispatch:
 
 jobs:
